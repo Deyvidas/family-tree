@@ -17,10 +17,10 @@ export function NavLinks(props: IProps) {
     return (
         <StyledNavLinks {...props}>
             <Link
-                href='/person/all'
+                href='/person'
                 $color='secondary'
             >
-                all persons
+                Все члены семьи
             </Link>
         </StyledNavLinks>
     );

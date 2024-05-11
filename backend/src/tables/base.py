@@ -1,10 +1,15 @@
 from datetime import datetime
+from typing import Annotated
 from uuid import uuid4
 
+from sqlalchemy import DateTime
+from sqlalchemy import func
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import declared_attr
 from sqlalchemy.orm import mapped_column
+
+
+datetimeTZ = Annotated[datetime, mapped_column(DateTime(timezone=True))]
 
 
 class BaseTable(DeclarativeBase):
@@ -12,20 +17,16 @@ class BaseTable(DeclarativeBase):
         primary_key=True,
         default=lambda: uuid4().hex,
     )
-    created_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(),
+    created_at: Mapped[datetimeTZ] = mapped_column(
+        server_default=func.now(),
     )
-    updated_at: Mapped[datetime | None] = mapped_column(
-        onupdate=lambda: datetime.now(),
+    updated_at: Mapped[datetimeTZ | None] = mapped_column(
+        onupdate=func.now(),
     )
 
     show_fields = ['id']
 
-    @declared_attr.directive
-    def __tablename__(cls) -> str:
-        return cls.__name__.lower().replace('table', '')
-
     def __repr__(self) -> str:
-        name = type(self).__name__.replace('Table', '')
+        name = type(self).__name__
         values = [f'{f}: {repr(getattr(self, f))}' for f in self.show_fields]
         return f'{name}({', '.join(values)})'

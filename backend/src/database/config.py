@@ -25,6 +25,7 @@ class Config(BaseSettings):
         return create_engine(
             url=self.engine_config.db_url,
             echo=self.engine_config.echo,
+            connect_args={'options': '-c timezone=utc'},
         )
 
     @property

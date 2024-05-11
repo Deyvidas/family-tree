@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 const Person = z.object({
     id: z.string(),
-    created_at: z.string().datetime({ local: true }),
-    updated_at: z.string().datetime({ local: true }).nullable(),
+    created_at: z.string().datetime(),
+    updated_at: z.string().datetime().nullable(),
     first_name: z.string(),
     last_name: z.string(),
 });
