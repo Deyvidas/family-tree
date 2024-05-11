@@ -5,8 +5,23 @@ description = ""
 authors = ["Deyvidas <devidbanyavichyus@yandex.ru>"]
 readme = "README.md"
 
+
 [tool.poetry.dependencies]
 python = "^3.10"
+
+
+[tool.poetry.group.prod.dependencies]
+sqlalchemy = "^2.0.30"
+psycopg2-binary = "^2.9.9"
+sqlalchemy-utils = "^0.41.2"
+pydantic-settings = "^2.2.1"
+pyyaml = "^6.0.1"
+fastapi = "^0.111.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+alembic = "^1.13.1"
 
 
 [build-system]

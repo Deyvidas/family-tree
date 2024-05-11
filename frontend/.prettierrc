@@ -1,0 +1,28 @@
+{
+    "printWidth": 90,
+    "tabWidth": 4,
+    "useTabs": false,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "arrowParens": "avoid",
+    "singleAttributePerLine": true,
+
+    "overrides": [
+        {
+            "files": "*.scss",
+            "options": { "printWidth": 150 }
+        }
+    ],
+
+    "plugins": ["@trivago/prettier-plugin-sort-imports"],
+    "importOrderSeparation": true,
+    "importOrder": [
+        "<THIRD_PARTY_MODULES>",
+        "^@/lib/",
+        "^@/components/common",
+        "^@/components/",
+        ".(css|scss|sass)$",
+        ".(png|jpg|svg)$",
+        "^.[.]?/"
+    ]
+}

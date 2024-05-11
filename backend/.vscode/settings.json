@@ -1,0 +1,13 @@
+{
+    // python settings
+    "python.analysis.typeCheckingMode": "basic",
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.analysis.autoSearchPaths": false,
+
+    // cspell settings
+    "cSpell.words": [
+        "customise",
+        "dotenv",
+        "onupdate"
+    ]
+}
