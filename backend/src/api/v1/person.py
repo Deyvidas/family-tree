@@ -1,25 +1,27 @@
 from fastapi import APIRouter
 
-from src.repo.person import PersonRepo
-from src.schemas.person import PersonSchemaGET
-from src.schemas.person import PersonSchemaPOST
+from src.person.person_schema import PersonSchema
+from src.person.person_schema import PersonSchemaPOST
+from src.person.person_service import PersonService
 
 
-router = APIRouter(prefix='/person')
-repo = PersonRepo()
+router = APIRouter()
+service = PersonService()
 
 
 @router.get(
-    path='',
-    response_model=list[PersonSchemaGET],
+    summary='Get all available person.',
+    path='/',
+    response_model=list[PersonSchema],
 )
-def get_users():
-    return repo.get_all()
+def get_all_people():
+    return service.get_all()
 
 
 @router.post(
-    path='',
-    response_model=PersonSchemaGET,
+    summary='Create a new person',
+    path='/',
+    response_model=PersonSchema,
 )
-def create_user(user: PersonSchemaPOST):
-    return repo.create_user(**user.model_dump())
+def create_person(user: PersonSchemaPOST):
+    return service.create_person(user)

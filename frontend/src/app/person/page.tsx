@@ -1,11 +1,14 @@
 import { z } from 'zod';
 
 const Person = z.object({
-    id: z.string(),
+    id: z.string().min(32).max(32),
     created_at: z.string().datetime(),
-    updated_at: z.string().datetime().nullable(),
-    first_name: z.string(),
-    last_name: z.string(),
+    updated_at: z.string().datetime(),
+    name: z.string().min(1),
+    surname: z.string().min(1),
+    patronymic: z.string().min(1),
+    gender: z.enum(['male', 'female']),
+    birth_date: z.string().date(),
 });
 
 const People = z.array(Person);
@@ -33,8 +36,11 @@ export default async function AllPage() {
                     <p>{person.id}</p>
                     <p>{person.created_at}</p>
                     <p>{person.updated_at}</p>
-                    <p>{person.first_name}</p>
-                    <p>{person.last_name}</p>
+                    <p>{person.name}</p>
+                    <p>{person.surname}</p>
+                    <p>{person.patronymic}</p>
+                    <p>{person.birth_date}</p>
+                    <p>{person.gender}</p>
                 </>
             ))}
         </>

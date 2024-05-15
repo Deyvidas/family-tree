@@ -13,4 +13,4 @@ requirements_generation:	## Generate the requirement of project.
 	poetry run sh gen_requirements.sh
 
 run_dev:	## Run FastAPI with uvicorn server.
-	poetry run uvicorn src.api.v1:app --reload
+	poetry run uvicorn src.api:app --reload

@@ -4,15 +4,16 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from src.database.config import config as db_config
-from src.tables import BaseTable
+from src.database import DatabaseConfig
+from src.database.tables import BaseTable
 
 
 config = context.config
+db_url = DatabaseConfig.main_config.engine.url.render_as_string(hide_password=False)  # fmt:skip # noqa:E501
 config.set_section_option(
     section=config.config_ini_section,
     name='DB_URL',
-    value=db_config.engine.url.render_as_string(hide_password=False),
+    value=db_url,
 )
 
 target_metadata = BaseTable.metadata

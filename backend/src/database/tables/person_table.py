@@ -1,14 +1,10 @@
 from datetime import date
-from enum import Enum
 
 from sqlalchemy.orm import Mapped
 
-from src.tables import BaseTable
+from src.person.person_schema import EnumGender
 
-
-class EnumGender(Enum):
-    male = 'male'
-    female = 'female'
+from .base_table import BaseTable
 
 
 class PersonTable(BaseTable):

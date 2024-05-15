@@ -1,0 +1,7 @@
+engine_config:
+  db_url: !!str postgresql+psycopg2://postgres:postgres@localhost:5432/test-family-tree
+  echo: !!bool True
+
+session_config:
+  autoflush: !!bool False
+  expire_on_commit: !!bool False

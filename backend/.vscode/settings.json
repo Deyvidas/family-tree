@@ -8,6 +8,9 @@
     "cSpell.words": [
         "customise",
         "dotenv",
-        "onupdate"
+        "exitstatus",
+        "onupdate",
+        "sessionfinish",
+        "sessionstart"
     ]
 }

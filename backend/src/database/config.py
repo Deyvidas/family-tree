@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
@@ -10,7 +8,17 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
 
-class Config(BaseSettings):
+class EngineConfig(BaseModel):
+    db_url: str
+    echo: bool
+
+
+class SessionConfig(BaseModel):
+    autoflush: bool
+    expire_on_commit: bool
+
+
+class MainConfig(BaseSettings):
     engine_config: EngineConfig
     session_config: SessionConfig
 
@@ -29,7 +37,7 @@ class Config(BaseSettings):
         )
 
     @property
-    def session(self) -> sessionmaker[Session]:
+    def sessionmaker(self) -> sessionmaker[Session]:
         return sessionmaker(
             bind=self.engine,
             autoflush=self.session_config.autoflush,
@@ -37,14 +45,7 @@ class Config(BaseSettings):
         )
 
 
-class EngineConfig(BaseModel):
-    db_url: str
-    echo: bool
+class TestConfig(MainConfig):
+    """Configuration used for testing the application."""
 
-
-class SessionConfig(BaseModel):
-    autoflush: bool
-    expire_on_commit: bool
-
-
-config = Config()  # type: ignore
+    model_config = SettingsConfigDict(yaml_file='test.config.yaml')
