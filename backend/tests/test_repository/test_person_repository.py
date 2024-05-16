@@ -50,3 +50,24 @@ class Test:
         assert re.fullmatch(uuid4_hex_regex, person.id)
         assert person.created_at == datetime.now(timezoneUTC)
         assert person.updated_at == datetime.now(timezoneUTC)
+
+    def test_get(self, person_data: PersonSchemaPOST):
+        """
+        Test whether we can retrieve a single instance using correct filters.
+        """
+        created_person = repository.create(**person_data.model_dump())
+        can_filter_by = [
+            'name',
+            'surname',
+            'patronymic',
+            'gender',
+            'birth_date',
+        ]
+
+        for attr in can_filter_by:
+            received = repository.get(**{attr: getattr(created_person, attr)})
+            assert isinstance(received, PersonSchema)
+
+        complex_filter = {a: getattr(created_person, a) for a in can_filter_by}
+        received = repository.get(**complex_filter)
+        assert isinstance(received, PersonSchema)
