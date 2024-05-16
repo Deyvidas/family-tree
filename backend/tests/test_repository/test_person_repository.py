@@ -4,6 +4,7 @@ from random import choice
 
 import pytest
 from faker import Faker
+from sqlalchemy import select
 
 from src.database import DatabaseConfig
 from src.database.tables.base_table import timezoneUTC
@@ -58,8 +59,13 @@ class Test:
         """
         person_data = person_data_factory()
         person = repository.create(**person_data.model_dump())
-
         assert isinstance(person, PersonSchemaFULL)
+
+        # Check if the person is really created in the database.
+        stmt = select(repository.table).filter_by(id=person.id)
+        with repository.sessionmaker() as session:
+            session.scalars(stmt).one()
+
         assert person.name == person_data.name
         assert person.surname == person_data.surname
         assert person.patronymic == person_data.patronymic
