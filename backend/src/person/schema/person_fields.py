@@ -5,7 +5,7 @@ from typing import Annotated
 from pydantic import Field
 
 
-class EnumGender(Enum):
+class EnumGender(str, Enum):
     male = 'male'
     female = 'female'
 

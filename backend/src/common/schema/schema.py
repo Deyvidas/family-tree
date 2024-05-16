@@ -12,7 +12,10 @@ class BaseModelForSchema(BaseModel):
     def model_validate_many(cls, objects: list[Any]) -> list[Self]:
         return [cls.model_validate(obj) for obj in objects]
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        use_enum_values=True,
+    )
 
 
 class BaseSchema(BaseModelForSchema):

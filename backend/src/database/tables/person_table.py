@@ -2,8 +2,6 @@ from datetime import date
 
 from sqlalchemy.orm import Mapped
 
-from src.person.schema.person_fields import EnumGender
-
 from .base_table import BaseTable
 
 
@@ -13,7 +11,7 @@ class PersonTable(BaseTable):
     name: Mapped[str]
     surname: Mapped[str]
     patronymic: Mapped[str]
-    gender: Mapped[EnumGender]
+    gender: Mapped[str]
     birth_date: Mapped[date]
 
     show_fields = ['name', 'surname', 'birth_date']
