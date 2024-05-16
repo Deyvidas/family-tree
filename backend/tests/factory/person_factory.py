@@ -9,7 +9,7 @@ from src.person.schema.person_schema import PersonSchemaPOST
 fake = Faker(['ru_RU'])
 
 
-def person_data_factory() -> PersonSchemaPOST:
+def generate_person() -> PersonSchemaPOST:
     gender = choice(['male', 'female'])
     if gender == 'male':
         *_, name, patronymic, surname = fake.name_male().split()

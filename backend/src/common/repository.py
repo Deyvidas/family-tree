@@ -1,5 +1,6 @@
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
@@ -14,9 +15,13 @@ class BaseRepository[T: BaseSchema](ABC):
         self.sessionmaker = sessionmaker
 
     @abstractmethod
-    def filter(self, **kwargs) -> list[T]:
+    def create(self, **kwargs) -> T:
         raise NotImplementedError()
 
     @abstractmethod
-    def create(self, **kwargs) -> T:
+    def bulk_create(self, kwargs_list: list[dict[str, Any]]) -> list[T]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def filter(self, **kwargs) -> list[T]:
         raise NotImplementedError()
