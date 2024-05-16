@@ -1,6 +1,6 @@
-class NotFoundError(Exception):
+class ServiceErrorNotFound(Exception):
     pass
 
 
-class MoreThanOneFoundError(Exception):
+class ServiceErrorMoreThanOneFound(Exception):
     pass

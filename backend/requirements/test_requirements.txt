@@ -1,5 +1,6 @@
 colorama==0.4.6
 exceptiongroup==1.2.1
+faker==25.2.0
 freezegun==1.5.1
 iniconfig==2.0.0
 packaging==24.0

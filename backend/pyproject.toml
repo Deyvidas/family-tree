@@ -30,6 +30,7 @@ pytest = "^8.2.0"
 pytest-dependency = "^0.6.0"
 pytest-order = "^1.2.1"
 pytest-freezer = "^0.4.8"
+faker = "^25.2.0"
 
 [build-system]
 requires = ["poetry-core"]

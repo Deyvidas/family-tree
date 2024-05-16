@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy.orm import Mapped
 
-from src.person.person_schema import EnumGender
+from src.person.schema.person_fields import EnumGender
 
 from .base_table import BaseTable
 
