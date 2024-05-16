@@ -3,16 +3,14 @@ from datetime import datetime
 from random import choice
 
 import pytest
-from faker import Faker
 from sqlalchemy import select
 
 from src.database import DatabaseConfig
 from src.database.tables.base_table import timezoneUTC
 from src.person.person_repository import PersonRepository
-from src.person.schema.person_fields import EnumGender
 from src.person.schema.person_filter import PersonFilterFULL
 from src.person.schema.person_schema import PersonSchemaFULL
-from src.person.schema.person_schema import PersonSchemaPOST
+from tests.factory.person_factory import person_data_factory
 
 
 repository = PersonRepository(DatabaseConfig.test_config.sessionmaker)
@@ -21,25 +19,6 @@ uuid4_hex_regex = re.compile(
     "^[0-9A-F]{12}4[0-9A-F]{3}[89AB][0-9A-F]{15}$",
     flags=re.I,
 )
-
-fake = Faker(['ru_RU'])
-
-
-def person_data_factory() -> PersonSchemaPOST:
-    gender = choice(['male', 'female'])
-    if gender == 'male':
-        *_, name, patronymic, surname = fake.name_male().split()
-    elif gender == 'female':
-        *_, name, patronymic, surname = fake.name_female().split()
-    birth_date = fake.date_of_birth(minimum_age=0, maximum_age=90)
-
-    return PersonSchemaPOST(
-        name=name,
-        surname=surname,
-        patronymic=patronymic,
-        gender=getattr(EnumGender, gender),
-        birth_date=birth_date,
-    )
 
 
 @pytest.fixture
