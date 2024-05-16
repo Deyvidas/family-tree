@@ -1,6 +1,5 @@
 from src.common.exceptions import ServiceErrorMoreThanOneFound
 from src.common.exceptions import ServiceErrorNotFound
-from src.database import DatabaseConfig
 
 from .person_repository import PersonRepository
 from .schema.person_filter import PersonFilterFULL
@@ -9,7 +8,7 @@ from .schema.person_schema import PersonSchemaPOST
 
 
 class PersonService:
-    repository = PersonRepository(DatabaseConfig.main_config.sessionmaker)
+    repository = PersonRepository.sql_alchemy
 
     def get_all(self) -> list[PersonSchemaFULL]:
         people_list = self.repository.filter()
@@ -29,7 +28,7 @@ class PersonService:
             raise ServiceErrorMoreThanOneFound(msg)
 
     def filter_by(self, filters: PersonFilterFULL) -> list[PersonSchemaFULL]:
-        filtered_people = self.repository.filter(**filters.model_dump())
+        filtered_people = self.repository.filter(filters)
         return filtered_people
 
     def create_person(self, person_data: PersonSchemaPOST) -> PersonSchemaFULL:

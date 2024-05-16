@@ -6,7 +6,6 @@ from typing import Any
 import pytest
 from sqlalchemy import select
 
-from src.database import DatabaseConfig
 from src.database.tables.base_table import timezoneUTC
 from src.person.person_repository import PersonRepository
 from src.person.schema.person_filter import PersonFilterFULL
@@ -15,12 +14,12 @@ from src.person.schema.person_schema import PersonSchemaPOST
 from tests.factory.person_factory import generate_person
 
 
-repository = PersonRepository(DatabaseConfig.test_config.sessionmaker)
+repository = PersonRepository.sql_alchemy_test
 
 
 @pytest.fixture
 def populate_database() -> list[PersonSchemaFULL]:
-    people_to_insert = [generate_person().model_dump() for _ in range(20)]
+    people_to_insert = [generate_person() for _ in range(20)]
     return repository.bulk_create(people_to_insert)
 
 
@@ -32,7 +31,7 @@ class Test:
         be returned with additional generic fields, such as id, created_at, etc
         """
         person_data = generate_person()
-        person = repository.create(**person_data.model_dump())
+        person = repository.create(person_data)
         assert isinstance(person, PersonSchemaFULL)
 
         # Check if the person is really created in the database.
@@ -48,18 +47,18 @@ class Test:
         them will be returned with additional generic fields, such as id,
         created_at, etc
         """
-        people_to_insert = [generate_person().model_dump() for _ in range(5)]
-        inserted = repository.bulk_create(people_to_insert)
+        people_data = [generate_person() for _ in range(5)]
+        inserted = repository.bulk_create(people_data)
         assert len(inserted) == 5
         assert all(map(lambda p: isinstance(p, PersonSchemaFULL), inserted))
 
         # Check if they are really created in the database
-        for person in people_to_insert:
-            stmt = select(repository.table).filter_by(**person)
+        for data in people_data:
+            stmt = select(repository.table).filter_by(**data.model_dump())
             with repository.sessionmaker() as session:
                 # Return exactly one object or raise an exception.
                 created_person = session.scalars(stmt).one()
-            self.validate_person(person, created_person)
+            self.validate_person(data, created_person)
 
     def test_filter(self, populate_database: list[PersonSchemaFULL]):
         """
@@ -68,14 +67,16 @@ class Test:
         person_to_get = choice(populate_database)
         can_filter_by = PersonFilterFULL.model_fields.keys()
 
+        # Filtering using one filter parameter
         for attr in can_filter_by:
             filter = PersonFilterFULL(**{attr: getattr(person_to_get, attr)})
-            found = repository.filter(**filter.model_dump(exclude_unset=True))
+            found = repository.filter(filter)
             assert len(found) >= 1
 
+        # Filtering using all available filter parameters
         filter_kwargs = {a: getattr(person_to_get, a) for a in can_filter_by}
         filter = PersonFilterFULL(**filter_kwargs)
-        found = repository.filter(**filter.model_dump())
+        found = repository.filter(filter)
         assert len(found) == 1
         assert isinstance(found[0], PersonSchemaFULL)
 

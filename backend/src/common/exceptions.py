@@ -4,3 +4,7 @@ class ServiceErrorNotFound(Exception):
 
 class ServiceErrorMoreThanOneFound(Exception):
     pass
+
+
+class RepositoryErrorUnexistentColumn(Exception):
+    pass
