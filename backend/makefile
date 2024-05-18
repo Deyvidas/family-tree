@@ -18,6 +18,10 @@ run_dev:	## Run FastAPI with uvicorn server.
 run_tests:	## Run all Pytest tests.
 	poetry run pytest
 
-before_commit:	## Update requirements/* and run Pytest tests.
-	make run_tests && echo '--- [ RUN TESTS ] ---' && \
-	make generate_requirements && echo '--- [ GENERATE REQUIREMENTS ] ---'
+pyright:	## Run pyright check.
+	poetry run pyright .
+
+before_commit:	## Run pyright, update requirements/* and run tests.
+	echo `--- [ RUN PYRIGHT ] ---` && make pyright && \
+	echo '--- [ RUN TESTS ] ---' && make run_tests && \
+	echo '--- [ GENERATE REQUIREMENTS ] ---' && make generate_requirements

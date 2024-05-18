@@ -7,22 +7,21 @@ import pytest
 from sqlalchemy import select
 
 from src.database.tables.base_table import timezoneUTC
-from src.person.person_repository import PersonRepository
-from src.person.schema.person_filter import PersonFilterFULL
-from src.person.schema.person_schema import PersonSchemaFULL
-from src.person.schema.person_schema import PersonSchemaPOST
+from src.person.repository.person_repository import PersonRepositories
+from src.person.repository.person_repository_dto import PersonSchemaInsert
+from src.person.schema.person_schema import PersonSchema
 from tests.factory.person_factory import generate_person
 
 
-repository = PersonRepository.sql_alchemy_test
+repository = PersonRepositories.sqlalchemy_test
 
 
 def validate_person(valid_data: Any, to_validate_data: Any) -> None:
     uuid4_hex_regex = re.compile("^[0-9A-F]{12}4[0-9A-F]{3}[89AB][0-9A-F]{15}$", flags=re.I)  # fmt:skip # noqa:E501
-    valid = PersonSchemaPOST.model_validate(valid_data)
-    to_validate = PersonSchemaFULL.model_validate(to_validate_data)
+    valid = PersonSchemaInsert.model_validate(valid_data)
+    to_validate = PersonSchema.model_validate(to_validate_data)
 
-    for attr in valid.model_fields.keys():
+    for attr in valid.model_fields_set:
         assert getattr(valid, attr) == getattr(to_validate, attr)
 
     assert re.fullmatch(uuid4_hex_regex, to_validate.id)
@@ -31,80 +30,82 @@ def validate_person(valid_data: Any, to_validate_data: Any) -> None:
 
 
 @pytest.fixture
-def populate_database() -> list[PersonSchemaFULL]:
+def populate_database() -> list[PersonSchema]:
     GENERATE_QUANTITY = 20
     people_to_insert = [generate_person() for _ in range(GENERATE_QUANTITY)]
-    people_list = repository.bulk_create(people_to_insert)
-    assert len(people_list) == GENERATE_QUANTITY
-    return people_list
+    new_people_list = repository.bulk_create(people_to_insert)
+    assert len(new_people_list) == GENERATE_QUANTITY
+    return new_people_list
 
 
 @pytest.mark.usefixtures('use_database')
 class TestCreate:
-    def test_base(self, freezer):
+    @pytest.mark.usefixtures('freezer')
+    def test_base(self):
         """
         Test whether we can insert one row into the database and that it will
         be returned with additional generic fields, such as id, created_at, etc
         """
-        person_data = generate_person()
-        person = repository.create(person_data)
-        assert isinstance(person, PersonSchemaFULL)
+        new_person_data = generate_person()
+        new_person = repository.create(new_person_data)
+        assert isinstance(new_person, PersonSchema)
 
         # Check if the person is really created in the database.
-        stmt = select(repository.table).filter_by(id=person.id)
+        stmt = select(repository.table).filter_by(id=new_person.id)
         with repository.sessionmaker() as session:
             # Return exactly one object or raise an exception.
-            person = session.scalars(stmt).one()
-        validate_person(person_data, person)
+            new_person = session.scalars(stmt).one()
+        validate_person(new_person_data, new_person)
 
 
 @pytest.mark.usefixtures('use_database')
 class TestBulkCreate:
-    def test_base(self, freezer):
+    @pytest.mark.usefixtures('freezer')
+    def test_base(self):
         """
         Test whether we can insert many rows into the database and that all of
         them will be returned with additional generic fields, such as id,
         created_at, etc
         """
-        people_data = [generate_person() for _ in range(5)]
-        inserted = repository.bulk_create(people_data)
-        assert len(inserted) == 5
-        assert all(map(lambda p: isinstance(p, PersonSchemaFULL), inserted))
+        people_data_list = [generate_person() for _ in range(5)]
+        new_people = repository.bulk_create(people_data_list)
+        assert len(new_people) == 5
+        assert all(map(lambda p: isinstance(p, PersonSchema), new_people))
 
         # Check if they are really created in the database
-        for data in people_data:
-            stmt = select(repository.table).filter_by(**data.model_dump())
+        for person_data in people_data_list:
+            stmt = select(repository.table).filter_by(
+                **person_data.model_dump()
+            )
             with repository.sessionmaker() as session:
-                # Return exactly one object or raise an exception.
-                created_person = session.scalars(stmt).one()
-            validate_person(data, created_person)
+                new_person = session.scalars(stmt).one()
+            validate_person(person_data, new_person)
 
 
 @pytest.mark.usefixtures('use_database')
 class TestFilter:
-    def test_base(self, populate_database: list[PersonSchemaFULL]):
+    def test_base(self, populate_database: list[PersonSchema]):
         """
         Test whether we can filter database rows using correct filters
         """
         person_to_get = choice(populate_database)
-        can_filter_by = PersonFilterFULL.model_fields.keys()
+        can_filter_by = PersonSchema.model_fields.keys()
 
         # Filtering using one filter parameter
         for attr in can_filter_by:
-            filter = PersonFilterFULL(**{attr: getattr(person_to_get, attr)})
-            found = repository.filter(filter)
+            filter_by = {attr: getattr(person_to_get, attr)}
+            found = repository.filter(filter_by=filter_by)
             assert len(found) >= 1
 
         # Filtering using all available filter parameters
-        filter_kwargs = {a: getattr(person_to_get, a) for a in can_filter_by}
-        filter = PersonFilterFULL(**filter_kwargs)
-        found = repository.filter(filter)
+        filter_by_all = {a: getattr(person_to_get, a) for a in can_filter_by}
+        found = repository.filter(filter_by_all)
         assert len(found) == 1
-        assert isinstance(found[0], PersonSchemaFULL)
+        assert isinstance(found[0], PersonSchema)
 
     def test_without_filter_by(
         self,
-        populate_database: list[PersonSchemaFULL],
+        populate_database: list[PersonSchema],
     ):
         """
         Test that all rows from the database are returned by the method
@@ -115,15 +116,13 @@ class TestFilter:
 
     def test_with_order_by(
         self,
-        populate_database: list[PersonSchemaFULL],
+        populate_database: list[PersonSchema],
     ):
         """Test that ordering work correct"""
         ordered_people = repository.filter(order_by=['gender', '-birth_date'])
         assert len(ordered_people) == len(populate_database)
 
-        for i in range(len(ordered_people) - 2):
-            left, right = ordered_people[i], ordered_people[i + 1]
-
+        for left, right in zip(ordered_people[:-1], ordered_people[1:]):
             assert left.gender <= right.gender
             if left.gender == right.gender:
                 assert left.birth_date >= right.birth_date

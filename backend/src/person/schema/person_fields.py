@@ -4,13 +4,15 @@ from typing import Annotated
 
 from pydantic import Field
 
+from src.common.schema.fields import BaseFields
+
 
 class EnumGender(str, Enum):
     male = 'male'
     female = 'female'
 
 
-class PersonSchemaFields:
+class PersonFields(BaseFields):
     name = Annotated[
         str,
         Field(),

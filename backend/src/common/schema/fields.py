@@ -4,16 +4,24 @@ from typing import Annotated
 from pydantic import Field
 
 
-class BaseSchemaFields:
-    id_field = Annotated[
+class BaseFields:
+    id = Annotated[
         str,
         Field(),
     ]
-    created_at_field = Annotated[
+    created_at = Annotated[
         datetime,
         Field(),
     ]
-    updated_at_field = Annotated[
+    updated_at = Annotated[
         datetime,
         Field(),
     ]
+
+    exclude = Field(
+        default=None,
+        exclude=True,
+    )
+    optional = Field(
+        default=None,
+    )

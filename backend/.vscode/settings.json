@@ -1,6 +1,6 @@
 {
     // python settings
-    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.typeCheckingMode": "strict",
     "python.defaultInterpreterPath": "./.venv/bin/python",
     "python.analysis.autoSearchPaths": false,
 
@@ -11,6 +11,7 @@
         "exitstatus",
         "onupdate",
         "sessionfinish",
-        "sessionstart"
+        "sessionstart",
+        "TSQL"
     ]
 }

@@ -1,27 +1,27 @@
 from fastapi import APIRouter
 
-from src.person.person_service import PersonService
-from src.person.schema.person_schema import PersonSchemaFULL
-from src.person.schema.person_schema import PersonSchemaPOST
+from src.person.service.person_service import PersonServices
+from src.person.service.person_service_dto import PersonSchemaGET
+from src.person.service.person_service_dto import PersonSchemaPOST
 
 
 router = APIRouter()
-service = PersonService()
+service = PersonServices.main_service
 
 
 @router.get(
     summary='Get all available person.',
     path='/',
-    response_model=list[PersonSchemaFULL],
+    response_model=list[PersonSchemaGET],
 )
 def get_all_people():
-    return service.get_all()
+    return service.get_all(order_by=['-updated_at'])
 
 
 @router.post(
     summary='Create a new person',
     path='/',
-    response_model=PersonSchemaFULL,
+    response_model=PersonSchemaGET,
 )
 def create_person(user: PersonSchemaPOST):
     return service.create_person(user)
