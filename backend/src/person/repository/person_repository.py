@@ -8,12 +8,12 @@ from sqlalchemy.orm import InstrumentedAttribute
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker as sqlalchemy_sessionmaker
 
-from src.common.repository.exceptions import RepositoryErrorUnexistentColumn
+from src.common.types import OrderBy
 from src.database import DatabaseConfig
 from src.database.tables.person_table import PersonTable
 from src.person.schema.person_schema import PersonSchema
+from src.person.schema.person_schema import PersonSchemaPOST
 
-from .person_repository_dto import PersonSchemaInsert
 from .person_repository_interface import PersonRepositoryInterface
 
 
@@ -29,7 +29,7 @@ class PersonRepository(PersonRepositoryInterface):
     @override
     def create(
         self,
-        data: PersonSchemaInsert,
+        data: PersonSchemaPOST,
     ) -> PersonSchema:
         query = (
             insert(self.table)
@@ -45,11 +45,11 @@ class PersonRepository(PersonRepositoryInterface):
     @override
     def bulk_create(
         self,
-        data_list: list[PersonSchemaInsert],
+        data_list: list[PersonSchemaPOST],
     ) -> list[PersonSchema]:
         query = (
             insert(self.table)
-            .values(PersonSchemaInsert.model_dump_many(data_list))
+            .values(PersonSchemaPOST.model_dump_many(data_list))
             .returning(self.table)
         )
 
@@ -62,7 +62,7 @@ class PersonRepository(PersonRepositoryInterface):
     def filter(
         self,
         filter_by: dict[str, Any] | None = None,
-        order_by: list[str] | None = None,
+        order_by: list[OrderBy] | None = None,
     ) -> list[PersonSchema]:
         query = select(self.table)
         query = self.__enrich_select_filter_by(query, filter_by)
@@ -79,34 +79,31 @@ class PersonRepository(PersonRepositoryInterface):
     ) -> Select[tuple[PersonTable]]:
         if filter_by is None:
             return select_stmt
+
+        PersonSchema.has_fields(list(filter_by))
+
         select_stmt = select_stmt.filter_by(**filter_by)
         return select_stmt
 
     def __enrich_select_order_by(
         self,
         select_stmt: Select[tuple[PersonTable]],
-        order_by: list[str] | None,
+        order_by: list[OrderBy] | None,
     ) -> Select[tuple[PersonTable]]:
         if order_by is None:
             return select_stmt
 
-        for column_name in order_by:
-            is_desc = False
-            if column_name.startswith('-'):
-                is_desc = True
-                column_name = column_name[1:]
+        PersonSchema.has_fields([order.field for order in order_by])
 
-            column: InstrumentedAttribute[Any] | None = getattr(
-                PersonTable, column_name, None
+        for order in order_by:
+            column: InstrumentedAttribute[Any] = getattr(
+                PersonTable, order.field
             )
-            if column is None:
-                msg = f'Table {PersonTable.__tablename__} hasn`t column {column_name}'  # noqa:E501
-                raise RepositoryErrorUnexistentColumn(msg)
-
-            if is_desc is True:
-                select_stmt = select_stmt.order_by(column.desc())
-            else:
-                select_stmt = select_stmt.order_by(column.asc())
+            match order.direction:
+                case 'asc':
+                    select_stmt = select_stmt.order_by(column.asc())
+                case 'desc':
+                    select_stmt = select_stmt.order_by(column.desc())
 
         return select_stmt
 

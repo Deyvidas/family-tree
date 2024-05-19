@@ -1,5 +1,5 @@
-from .fields import BaseFields
 from .config import BaseModelForSchema
+from .fields import BaseFields
 
 
 class BaseSchema(BaseModelForSchema):

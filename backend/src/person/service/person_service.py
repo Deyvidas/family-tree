@@ -1,10 +1,10 @@
 from typing import override
 
+from src.common.types import OrderBy
 from src.person.repository.person_repository import PersonRepositories
 from src.person.repository.person_repository import PersonRepository
-from src.person.repository.person_repository_dto import PersonSchemaInsert
-from src.person.service.person_service_dto import PersonSchemaGET
-from src.person.service.person_service_dto import PersonSchemaPOST
+from src.person.schema.person_schema import PersonSchema
+from src.person.schema.person_schema import PersonSchemaPOST
 
 from .person_service_interface import PersonServiceInterface
 
@@ -19,19 +19,16 @@ class PersonService(PersonServiceInterface):
     @override
     def get_all(
         self,
-        order_by: list[str],
-    ) -> list[PersonSchemaGET]:
-        filtered_people = self.repository.filter(order_by=order_by)
-        return PersonSchemaGET.model_validate_many(filtered_people)
+        order_by: list[OrderBy],
+    ) -> list[PersonSchema]:
+        return self.repository.filter(order_by=order_by)
 
     @override
     def create_person(
         self,
         data: PersonSchemaPOST,
-    ) -> PersonSchemaGET:
-        insert_data = PersonSchemaInsert.model_validate(data)
-        new_person = self.repository.create(insert_data)
-        return PersonSchemaGET.model_validate(new_person)
+    ) -> PersonSchema:
+        return self.repository.create(data)
 
 
 class PersonServices:

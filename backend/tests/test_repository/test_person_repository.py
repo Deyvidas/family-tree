@@ -6,10 +6,12 @@ from typing import Any
 import pytest
 from sqlalchemy import select
 
+from src.common.exceptions import SchemaDoesNotHaveFields
+from src.common.types import OrderBy
 from src.database.tables.base_table import timezoneUTC
 from src.person.repository.person_repository import PersonRepositories
-from src.person.repository.person_repository_dto import PersonSchemaInsert
 from src.person.schema.person_schema import PersonSchema
+from src.person.schema.person_schema import PersonSchemaPOST
 from tests.factory.person_factory import generate_person
 
 
@@ -17,8 +19,11 @@ repository = PersonRepositories.sqlalchemy_test
 
 
 def validate_person(valid_data: Any, to_validate_data: Any) -> None:
-    uuid4_hex_regex = re.compile("^[0-9A-F]{12}4[0-9A-F]{3}[89AB][0-9A-F]{15}$", flags=re.I)  # fmt:skip # noqa:E501
-    valid = PersonSchemaInsert.model_validate(valid_data)
+    uuid4_hex_regex = re.compile(
+        "^[0-9A-F]{12}4[0-9A-F]{3}[89AB][0-9A-F]{15}$",
+        flags=re.I,
+    )
+    valid = PersonSchemaPOST.model_validate(valid_data)
     to_validate = PersonSchema.model_validate(to_validate_data)
 
     for attr in valid.model_fields_set:
@@ -53,7 +58,6 @@ class TestCreate:
         # Check if the person is really created in the database.
         stmt = select(repository.table).filter_by(id=new_person.id)
         with repository.sessionmaker() as session:
-            # Return exactly one object or raise an exception.
             new_person = session.scalars(stmt).one()
         validate_person(new_person_data, new_person)
 
@@ -119,10 +123,32 @@ class TestFilter:
         populate_database: list[PersonSchema],
     ):
         """Test that ordering work correct"""
-        ordered_people = repository.filter(order_by=['gender', '-birth_date'])
+        order_by = [
+            OrderBy('gender', 'asc'),
+            OrderBy('birth_date', 'desc'),
+        ]
+        ordered_people = repository.filter(order_by=order_by)
         assert len(ordered_people) == len(populate_database)
 
         for left, right in zip(ordered_people[:-1], ordered_people[1:]):
             assert left.gender <= right.gender
             if left.gender == right.gender:
                 assert left.birth_date >= right.birth_date
+
+    def test_filtering_by_unexistent_field(self):
+        """
+        Test that when we try to filter by an unexistent field a
+        SchemaDoesNotHaveFields exception is raised
+        """
+        with pytest.raises(SchemaDoesNotHaveFields) as error:
+            repository.filter(filter_by=dict(unexistent_field='some-value'))
+        assert 'unexistent_field' in str(error)
+
+    def test_ordering_by_unexistent_field(self):
+        """
+        Test that when we try to order by an unexistent field a
+        SchemaDoesNotHaveFields exception is raised
+        """
+        with pytest.raises(SchemaDoesNotHaveFields) as error:
+            repository.filter(order_by=[OrderBy('unexistent_field', 'asc')])
+        assert 'unexistent_field' in str(error)

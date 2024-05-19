@@ -2,14 +2,14 @@ from random import choice
 
 from faker import Faker
 
-from src.person.repository.person_repository_dto import PersonSchemaInsert
 from src.person.schema.person_fields import EnumGender
+from src.person.schema.person_schema import PersonSchemaPOST
 
 
 fake = Faker(['ru_RU'])
 
 
-def generate_person() -> PersonSchemaInsert:
+def generate_person() -> PersonSchemaPOST:
     gender = choice(list(EnumGender))
     birth_date = fake.date_of_birth(minimum_age=0, maximum_age=90)
 
@@ -19,7 +19,7 @@ def generate_person() -> PersonSchemaInsert:
         case 'female':
             *_, name, patronymic, surname = fake.name_female().split()
 
-    return PersonSchemaInsert(
+    return PersonSchemaPOST(
         name=name,
         surname=surname,
         patronymic=patronymic,

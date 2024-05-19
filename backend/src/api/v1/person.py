@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
+from src.common.types import OrderBy
+from src.person.schema.person_schema import PersonSchemaGET
+from src.person.schema.person_schema import PersonSchemaPOST
 from src.person.service.person_service import PersonServices
-from src.person.service.person_service_dto import PersonSchemaGET
-from src.person.service.person_service_dto import PersonSchemaPOST
 
 
 router = APIRouter()
@@ -10,12 +11,13 @@ service = PersonServices.main_service
 
 
 @router.get(
-    summary='Get all available person.',
+    summary='Get all available people',
     path='/',
     response_model=list[PersonSchemaGET],
 )
-def get_all_people():
-    return service.get_all(order_by=['-updated_at'])
+def get_all_people() -> list[PersonSchemaGET]:
+    people = service.get_all(order_by=[OrderBy('updated_at', 'desc')])
+    return PersonSchemaGET.model_validate_many(people)
 
 
 @router.post(
@@ -23,5 +25,6 @@ def get_all_people():
     path='/',
     response_model=PersonSchemaGET,
 )
-def create_person(user: PersonSchemaPOST):
-    return service.create_person(user)
+def create_person(person: PersonSchemaPOST) -> PersonSchemaGET:
+    new_person = service.create_person(person)
+    return PersonSchemaGET.model_validate(new_person)

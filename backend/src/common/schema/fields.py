@@ -18,10 +18,6 @@ class BaseFields:
         Field(),
     ]
 
-    exclude = Field(
-        default=None,
-        exclude=True,
-    )
     optional = Field(
         default=None,
     )

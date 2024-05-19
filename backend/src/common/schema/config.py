@@ -11,6 +11,8 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic.main import IncEx
 
+from src.common.exceptions import SchemaDoesNotHaveFields
+
 
 class BaseModelForSchema(BaseModel):
     @classmethod
@@ -28,6 +30,24 @@ class BaseModelForSchema(BaseModel):
         **options: Unpack[ModelDumpOptions],
     ) -> list[dict[str, Any]]:
         return [obj.model_dump(**options) for obj in objects]
+
+    @classmethod
+    def has_fields(
+        cls,
+        fields: list[str],
+    ) -> None:
+        """
+        Check if the passed fields are present in the schema. If at least one
+        field is missing from the schema, raise a SchemaDoesNotHaveFields
+        exception
+        """
+
+        extra_fields = set(fields) - set(cls.model_fields.keys())
+        if len(extra_fields) == 0:
+            return
+
+        msg = f'Schema {cls.__name__} does not have fields {fields}'
+        raise SchemaDoesNotHaveFields(msg)
 
     model_config = ConfigDict(
         from_attributes=True,

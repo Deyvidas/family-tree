@@ -2,23 +2,23 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Any
 
+from src.common.types import OrderBy
 from src.person.schema.person_schema import PersonSchema
-
-from .person_repository_dto import PersonSchemaInsert
+from src.person.schema.person_schema import PersonSchemaPOST
 
 
 class PersonRepositoryInterface(ABC):
     @abstractmethod
     def create(
         self,
-        data: PersonSchemaInsert,
+        data: PersonSchemaPOST,
     ) -> PersonSchema:
         raise NotImplementedError()
 
     @abstractmethod
     def bulk_create(
         self,
-        data_list: list[PersonSchemaInsert],
+        data_list: list[PersonSchemaPOST],
     ) -> list[PersonSchema]:
         raise NotImplementedError()
 
@@ -26,6 +26,6 @@ class PersonRepositoryInterface(ABC):
     def filter(
         self,
         filter_by: dict[str, Any] | None = None,
-        order_by: list[str] | None = None,
+        order_by: list[OrderBy] | None = None,
     ) -> list[PersonSchema]:
         raise NotImplementedError()
