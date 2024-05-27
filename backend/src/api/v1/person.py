@@ -1,30 +1,33 @@
-from fastapi import APIRouter
+from typing import Annotated
 
-from src.common.types import OrderBy
-from src.person.schema.person_schema import PersonSchemaGET
-from src.person.schema.person_schema import PersonSchemaPOST
-from src.person.service.person_service import PersonServices
+from fastapi import APIRouter
+from fastapi import Depends
+
+from src import person
+
+
+def get_person_service() -> person.Service:
+    return person.service
 
 
 router = APIRouter()
-service = PersonServices.main_service
+ServiceDepends = Annotated[person.Service, Depends(get_person_service)]
 
 
 @router.get(
-    summary='Get all available people',
+    summary='Get all people',
     path='/',
-    response_model=list[PersonSchemaGET],
 )
-def get_all_people() -> list[PersonSchemaGET]:
-    people = service.get_all(order_by=[OrderBy('updated_at', 'desc')])
-    return PersonSchemaGET.model_validate_many(people)
+def get_all_people(service: ServiceDepends) -> list[person.SchemaGET]:
+    return service.get_all()
 
 
 @router.post(
     summary='Create a new person',
     path='/',
-    response_model=PersonSchemaGET,
 )
-def create_person(person: PersonSchemaPOST) -> PersonSchemaGET:
-    new_person = service.create_person(person)
-    return PersonSchemaGET.model_validate(new_person)
+def create_new_person(
+    data: person.SchemaPOST,
+    service: ServiceDepends,
+) -> person.SchemaGET:
+    return service.create_person(data)
